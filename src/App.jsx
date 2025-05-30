@@ -95,7 +95,7 @@ const App = () => {
         </div>
         <motion.div className="bg-[#0e0e0e] p-4 w-[300px] absolute bottom-[150px] right-[200px] drop-shadow-lg z-50" variants={explainAnimation} initial="hidden" animate="show">
           <p className="text-[#eaeaea] text-sm text-justify">
-            a building where paintings and other works of art are shown to the public. Culture art galleries and museums of art. Shops that sell paintings are also called galleries.
+            a building alicia  where paintings and other works of art are shown to the public. Culture art galleries and museums of art. Shops that sell paintings are also called galleries.
           </p>
         </motion.div>
       </section>
