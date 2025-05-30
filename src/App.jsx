@@ -49,7 +49,7 @@ const App = () => {
       clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
       transition:{
         delay:2.8,
-        duration:0.5,
+        duration:1.5,
         ease:'easeInOut',
       }
     }
