@@ -48,8 +48,8 @@ const App = () => {
     show:{
       clipPath: "polygon(0 0, 100% 0, 100% 100%, 0 100%)",
       transition:{
-        delay:2.8,
-        duration:0.5,
+        delay:2.8,  
+        duration:0.5, 
         ease:'easeInOut',
       }
     }
@@ -93,9 +93,9 @@ const App = () => {
         <div className="w-[500px] m-auto">
           <motion.img src="/img/img.webp" alt="art" className="object-cover" variants={imgAnimation} initial="hidden" animate="show" />
         </div>
-        <motion.div className="bg-[#0e0e0e] p-4 w-[300px] absolute bottom-[150px] right-[200px] drop-shadow-lg z-50" variants={explainAnimation} initial="hidden" animate="show">
-          <p className="text-[#eaeaea] text-sm text-justify">
-            a building where paintings and other works of art are shown to the public. Culture art galleries and museums of art. Shops that sell paintings are also called galleries.
+        <motion.div className="bg-white/20 animate-pulse backdrop-blur-xl p-4 w-[300px] absolute bottom-[150px] right-[200px] drop-shadow-lg z-50" variants={explainAnimation} initial="hidden" animate="show">
+          <p className="text-yellow-700 font-semibold text-sm text-justify">
+            a building where paintings  testing gitand other works of art are shown to the public. Culture art galleries and museums of art. Shops that sell paintings are also called galleries.
           </p>
         </motion.div>
       </section>
