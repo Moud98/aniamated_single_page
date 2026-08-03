@@ -95,7 +95,7 @@ const App = () => {
         </div>
         <motion.div className="bg-white/20 animate-pulse backdrop-blur-xl p-4 w-[300px] absolute bottom-[150px] right-[200px] drop-shadow-lg z-50" variants={explainAnimation} initial="hidden" animate="show">
           <p className="text-yellow-700 font-semibold text-sm text-justify">
-            a building where paintings  testing gitand other works of art are shown to the public. Culture art galleries and museums of art. Shops that sell paintings are also called galleries.
+            a building where paintings work testing gitand other works of art are shown to the public. Culture art galleries and museums of art. Shops that sell paintings are also called galleries.
           </p>
         </motion.div>
       </section>
