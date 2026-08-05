@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BlueWave — Interactive Frontend</title>
+  <style>
+    :root{
+      --bg:#e9f2ff;
+      --primary:#0b63d6;
+      --primary-2:#0f4fb3;
+      --accent:#00b4ff;
+      --muted:#6b7a8a;
+      --card:#ffffff;
+      --glass: rgba(255,255,255,0.6);
+      --radius:12px;
+      --shadow: 0 6px 18px rgba(11,99,214,0.12);
+      --glass-2: rgba(11,99,214,0.06);
+      --success:#16a34a;
+    }
+
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial;}
+    body{
+      background: linear-gradient(180deg,var(--bg),#f4f9ff);
+      color:#0b2340;
+      -webkit-font-smoothing:antialiased;
+      -moz-osx-font-smoothing:grayscale;
+      display:flex;flex-direction:column;
+      min-height:100vh;
+    }
+
+    .topbar{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 20px;background:linear-gradient(90deg,var(--primary),var(--primary-2));
+      color:white;box-shadow:0 6px 18px rgba(11,99,214,0.18);
+      position:sticky;top:0;z-index:50;
+    }
+    .brand{display:flex;align-items:center;gap:12px;font-weight:700;font-size:18px}
+    .brand .logo{
+      width:44px;height:44px;border-radius:10px;background:linear-gradient(135deg,var(--accent),#3b82f6);
+      display:flex;align-items:center;justify-content:center;color:white;font-weight:800;box-shadow:0 6px 18px rgba(0,0,0,0.08);
+    }
+    .toolbar{display:flex;gap:8px;align-items:center}
+    .tab{
+      background:transparent;border:0;color:rgba(255,255,255,0.95);padding:8px 12px;border-radius:10px;font-weight:600;cursor:pointer;
+      transition:transform .12s ease, background .12s ease, box-shadow .12s ease;
+    }
+    .tab:hover{transform:translateY(-3px);box-shadow:0 8px 20px rgba(0,0,0,0.08)}
+    .tab.active{background:rgba(255,255,255,0.12);backdrop-filter:blur(6px)}
+
+    .container{display:flex;flex:1;gap:20px;padding:28px;max-width:1200px;margin:0 auto;width:100%;}
+    .panel{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+    .left{flex:1;min-width:320px}
+    .right{flex:2;min-width:520px}
+
+    .dashboard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+    .card{padding:16px;border-radius:12px;background:linear-gradient(180deg,var(--glass),#fff);border:1px solid var(--glass-2)}
+    .user-info{display:flex;gap:14px;align-items:center}
+    .avatar{width:72px;height:72px;border-radius:14px;background:linear-gradient(135deg,#fff,rgba(11,99,214,0.06));display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--primary-2);font-size:22px}
+    .muted{color:var(--muted);font-size:13px}
+
+    .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600}
+    .btn-primary{background:linear-gradient(90deg,var(--primary),var(--primary-2));color:white;box-shadow:0 8px 20px rgba(11,99,214,0.12)}
+    .btn-ghost{background:transparent;border:1px solid var(--glass-2);color:var(--primary-2)}
+
+    .modes{display:flex;gap:8px;flex-wrap:wrap}
+    .mode-card{flex:1;min-width:120px;padding:12px;border-radius:10px;background:linear-gradient(180deg,#f7fbff,#fff);border:1px solid var(--glass-2);cursor:pointer;transition:transform .12s}
+    .mode-card:hover{transform:translateY(-6px)}
+    .mode-card.active{outline:2px solid var(--accent);box-shadow:0 12px 30px rgba(11,99,214,0.06)}
+
+    .chat-layout{display:flex;height:calc(100vh - 120px);gap:14px}
+    .sidebar{width:260px;background:linear-gradient(180deg,#f7fbff,#fff);border-radius:12px;padding:12px;border:1px solid var(--glass-2);display:flex;flex-direction:column;gap:10px}
+    .sidebar .section{font-weight:700;color:var(--primary-2);margin-bottom:6px}
+    .list{display:flex;flex-direction:column;gap:8px;overflow:auto;padding-right:6px}
+    .list button{background:transparent;border:0;text-align:left;padding:10px;border-radius:8px;cursor:pointer;color:var(--primary-2);font-weight:600}
+    .list button:hover{background:rgba(11,99,214,0.04)}
+
+    .chat-area{flex:1;background:linear-gradient(180deg,#fff,#f8fbff);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px}
+    .chat-header{display:flex;align-items:center;justify-content:space-between;padding-bottom:6px;border-bottom:1px dashed var(--glass-2)}
+    .messages{flex:1;overflow:auto;padding:8px;display:flex;flex-direction:column;gap:10px}
+    .msg{max-width:70%;padding:10px 12px;border-radius:12px;background:linear-gradient(180deg,#f1f8ff,#fff);border:1px solid var(--glass-2)}
+    .msg.user{align-self:flex-end;background:linear-gradient(90deg,#dbeafe,#bfdbfe);border:1px solid rgba(11,99,214,0.12)}
+    .composer{display:flex;gap:8px;align-items:center}
+    .composer input{flex:1;padding:12px;border-radius:10px;border:1px solid var(--glass-2);outline:none}
+    .small{font-size:12px;color:var(--muted)}
+
+    @media (max-width:900px){
+      .container{padding:18px;flex-direction:column}
+      .chat-layout{flex-direction:column;height:auto}
+      .sidebar{width:100%;flex-direction:row;overflow:auto}
+      .sidebar .list{flex-direction:row;gap:6px}
+      .left,.right{min-width:unset}
+    }
+
+    .pulse{animation:pulse 3s infinite}
+    @keyframes pulse{0%{transform:translateY(0)}50%{transform:translateY(-4px)}100%{transform:translateY(0)}}
+  </style>
+</head>
+<body>
+  <header class="topbar" role="banner">
+    <div class="brand">
+      <div class="logo">GW</div>
+      <div>
+        <div style="font-size:14px">BlueWave</div>
+        <div style="font-size:12px;opacity:.9">Interactive frontend prototype</div>
+      </div>
+    </div>
+
+    <nav class="toolbar" role="navigation" aria-label="Main toolbar">
+      <button class="tab active" data-tab="home" id="tab-home">Home</button>
+      <button class="tab" data-tab="mode" id="tab-mode">Mode</button>
+      <button class="tab" data-tab="about" id="tab-about">About</button>
+    </nav>
+  </header>
+
+  <main class="container" id="app">
+    <section class="left panel" id="left-panel" aria-live="polite">
+      <div id="home-view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <h3 style="margin:0;color:var(--primary-2)">Welcome back</h3>
+            <div class="muted">Your personalized dashboard</div>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button class="btn btn-primary" id="start-chat">Start chat with Greatest G Media</button>
+            <button class="btn btn-ghost" id="refresh-msg">Refresh message</button>
+          </div>
+        </div>
+
+        <div class="dashboard-grid">
+          <div class="card">
+            <div class="user-info">
+              <div class="avatar" id="avatar">G</div>
+              <div>
+                <div style="font-weight:800" id="user-name">gogfrey</div>
+                <div class="muted" id="user-role">Developer • Frontend Enthusiast</div>
+                <div style="margin-top:8px" class="small" id="user-details">Location: Iwambi, Mbeya Region, Tanzania</div>
+              </div>
+            </div>
+            <hr style="border:none;border-top:1px dashed var(--glass-2);margin:12px 0">
+            <div id="welcome-msg" style="font-size:14px">Loading a friendly message…</div>
+          </div>
+
+          <div class="card">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <div>
+                <div style="font-weight:800">Quick actions</div>
+                <div class="muted small">Tools to get you moving</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+              <button class="btn btn-primary" id="open-dashboard">Open Dashboard</button>
+              <button class="btn btn-ghost" id="open-profile">Edit Profile</button>
+              <button class="btn" id="show-random-tip">Get a Tip</button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div style="font-weight:800">Activity</div>
+            <div class="muted small" style="margin-top:8px">Recent interactions and system status</div>
+            <ul id="activity-list" style="margin-top:12px;padding-left:18px;color:var(--muted)"></ul>
+          </div>
+
+          <div class="card">
+            <div style="font-weight:800">Modes</div>
+            <div class="muted small" style="margin-top:8px">Choose a mode to perform a task</div>
+            <div class="modes" style="margin-top:12px" id="modes-list">
+              <div class="mode-card" data-mode="smart">Smart</div>
+              <div class="mode-card" data-mode="discover">Discover</div>
+              <div class="mode-card" data-mode="advice">Advice</div>
+              <div class="mode-card" data-mode="study">Study</div>
+              <div class="mode-card" data-mode="deep">Deep Learning</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="mode-view" style="display:none">
+        <h3 style="color:var(--primary-2);margin-top:0">Mode Center</h3>
+        <div class="muted small">Select a mode and interact with its tools</div>
+
+        <div style="margin-top:12px" id="mode-content">
+          <div class="card">
+            <div style="font-weight:800">Select a mode from above</div>
+            <div class="muted small">Each mode performs a focused task</div>
+          </div>
+        </div>
+      </div>
+
+      <div id="about-view" style="display:none">
+        <h3 style="color:var(--primary-2);margin-top:0">About the Developer</h3>
+        <div class="muted small">Professional profile and contact</div>
+
+        <div style="margin-top:12px" class="card">
+          <div style="display:flex;gap:12px;align-items:center">
+            <div class="avatar" style="width:84px;height:84px;border-radius:14px">G</div>
+            <div>
+              <div style="font-weight:800;font-size:16px">gogfrey</div>
+              <div class="muted small">Full-stack developer • UI/UX • ML enthusiast</div>
+              <div style="margin-top:8px" class="small">Location: Iwambi, Mbeya Region, Tanzania</div>
+            </div>
+          </div>
+
+          <hr style="border:none;border-top:1px dashed var(--glass-2);margin:12px 0">
+
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div>
+              <div style="font-weight:700">Contact</div>
+              <div class="muted small">Email: <strong>gogfrey@example.com</strong></div>
+              <div class="muted small">GitHub: <strong>github.com/gogfrey</strong></div>
+            </div>
+            <div>
+              <div style="font-weight:700">Skills</div>
+              <div class="muted small">JavaScript; HTML/CSS; React; Node; Python; ML</div>
+            </div>
+          </div>
+
+          <div style="margin-top:12px" class="small muted">Notes: This profile is editable. Add portfolio links, CV, or social handles to make it production-ready.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="right panel" id="right-panel">
+      <div id="main-view">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div>
+            <h3 style="margin:0;color:var(--primary-2)">Dashboard</h3>
+            <div class="muted small">Overview and quick interactions</div>
+          </div>
+          <div class="small muted">Status: <strong style="color:var(--success)">Online</strong></div>
+        </div>
+
+        <div class="card" style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:800">Personalized message</div>
+              <div class="muted small">This message rotates on refresh</div>
+            </div>
+            <div><button class="btn btn-ghost" id="cycle-msg">Cycle message</button></div>
+          </div>
+          <div style="margin-top:12px" id="main-welcome">Preparing a warm greeting…</div>
+        </div>
+
+        <div class="card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-weight:800">Modes quick-run</div>
+              <div class="muted small">Run a mode with one click</div>
+            </div>
+            <div style="display:flex;gap:8px">
+              <button class="btn" data-run="smart">Smart</button>
+              <button class="btn" data-run="discover">Discover</button>
+              <button class="btn" data-run="advice">Advice</button>
+              <button class="btn" data-run="study">Study</button>
+              <button class="btn" data-run="deep">Deep</button>
+            </div>
+          </div>
+
+          <div id="mode-result" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <div id="chat-view" style="display:none">
+        <div class="chat-layout">
+          <aside class="sidebar" aria-label="Chat sidebar">
+            <div class="section">Chats</div>
+            <div class="list" id="chats-list">
+              <button data-chat="general">General</button>
+              <button data-chat="projects">Projects</button>
+              <button data-chat="support">Support</button>
+            </div>
+
+            <div style="margin-top:8px" class="section">History</div>
+            <div class="list" id="history-list">
+              <button data-h="h1">Session 2026-08-05</button>
+              <button data-h="h2">Session 2026-07-30</button>
+            </div>
+
+            <div style="margin-top:auto">
+              <div style="display:flex;gap:8px;align-items:center;justify-content:space-between">
+                <div class="small muted">Upgrade</div>
+                <button class="btn btn-primary" id="upgrade-btn">Upgrade to Premium</button>
+              </div>
+              <div style="margin-top:8px;display:flex;gap:8px">
+                <button class="btn btn-ghost" id="new-chat">New Chat</button>
+                <button class="btn" id="projects-btn">Projects</button>
+              </div>
+              <div style="margin-top:8px" class="small muted">Artifacts: saved outputs, exports, and models</div>
+            </div>
+          </aside>
+
+          <section class="chat-area" aria-live="polite">
+            <div class="chat-header">
+              <div>
+                <div style="font-weight:800" id="chat-title">Chat with Greatest G Media</div>
+                <div class="muted small" id="chat-sub">Mode: conversational • Response style: helpful</div>
+              </div>
+              <div style="display:flex;gap:8px;align-items:center">
+                <button class="btn btn-ghost" id="chat-back">Back</button>
+                <button class="btn btn-primary" id="clear-chat">Clear</button>
+              </div>
+            </div>
+
+            <div class="messages" id="messages" tabindex="0" aria-label="Messages">
+            </div>
+
+            <div class="composer">
+              <input id="composer-input" placeholder="Write a message to Greatest G Media…" aria-label="Message input" />
+              <button class="btn btn-primary" id="send-btn">Send</button>
+            </div>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const user = {
+      name: 'gogfrey',
+      initials: 'G',
+      location: 'Iwambi, Mbeya Region, Tanzania',
+      role: 'Developer • Frontend Enthusiast'
+    };
+
+    const messagesPool = [
+      "Good to see you, gogfrey — build something beautiful today.",
+      "You're doing great work. Keep pushing the boundaries.",
+      "Small steps every day lead to big results. Let's ship it.",
+      "Creativity is your superpower. Use it wisely.",
+      "Focus, iterate, and celebrate progress — you're on the right track."
+    ];
+
+    function getRotatingMessage(){
+      const key = 'bluewave_msg_index_v1';
+      let idx = parseInt(localStorage.getItem(key) || '0', 10);
+      const msg = messagesPool[idx % messagesPool.length];
+      idx = (idx + 1) % messagesPool.length;
+      localStorage.setItem(key, idx);
+      return msg;
+    }
+
+    function logActivity(text){
+      const ul = document.getElementById('activity-list');
+      const li = document.createElement('li');
+      li.textContent = text;
+      ul.prepend(li);
+      while(ul.children.length > 8) ul.removeChild(ul.lastChild);
+    }
+
+    function showTab(tab){
+      document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('active', t.dataset.tab===tab));
+      document.getElementById('home-view').style.display = tab==='home' ? '' : 'none';
+      document.getElementById('mode-view').style.display = tab==='mode' ? '' : 'none';
+      document.getElementById('about-view').style.display = tab==='about' ? '' : 'none';
+    }
+
+    (function init(){
+      document.getElementById('user-name').textContent = user.name;
+      document.getElementById('avatar').textContent = user.initials;
+      document.getElementById('user-details').textContent = 'Location: ' + user.location;
+      document.getElementById('user-role').textContent = user.role;
+
+      const welcome = getRotatingMessage();
+      document.getElementById('welcome-msg').textContent = welcome;
+      document.getElementById('main-welcome').textContent = welcome;
+      logActivity('Loaded dashboard with rotating message.');
+
+      document.getElementById('tab-home').addEventListener('click', ()=>{ showTab('home'); });
+      document.getElementById('tab-mode').addEventListener('click', ()=>{ showTab('mode'); });
+      document.getElementById('tab-about').addEventListener('click', ()=>{ showTab('about'); });
+
+      document.getElementById('start-chat').addEventListener('click', openChat);
+      document.getElementById('open-dashboard').addEventListener('click', ()=>{ alert('Dashboard opened — this is a prototype.'); });
+      document.getElementById('open-profile').addEventListener('click', ()=>{ alert('Profile editor not implemented in prototype.'); });
+      document.getElementById('show-random-tip').addEventListener('click', ()=>{ alert(randomTip()); });
+
+      document.querySelectorAll('.mode-card').forEach(card=>{
+        card.addEventListener('click', ()=>{ activateMode(card.dataset.mode); document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('active')); card.classList.add('active'); });
+      });
+
+      document.querySelectorAll('[data-run]').forEach(b=>b.addEventListener('click', ()=>activateMode(b.dataset.run, true)));
+
+      document.getElementById('cycle-msg').addEventListener('click', ()=>{
+        const msg = getRotatingMessage();
+        document.getElementById('main-welcome').textContent = msg;
+        document.getElementById('welcome-msg').textContent = msg;
+        logActivity('Cycled message.');
+      });
+
+      document.getElementById('refresh-msg').addEventListener('click', ()=>{
+        const msg = getRotatingMessage();
+        document.getElementById('welcome-msg').textContent = msg;
+        document.getElementById('main-welcome').textContent = msg;
+        logActivity('Refreshed welcome message.');
+      });
+
+      document.getElementById('modes-list').addEventListener('click', (e)=>{
+        const m = e.target.closest('[data-mode]');
+        if(m) { activateMode(m.dataset.mode); document.getElementById('tab-mode').click(); }
+      });
+
+      document.getElementById('send-btn').addEventListener('click', sendMessage);
+      document.getElementById('composer-input').addEventListener('keydown', (e)=>{ if(e.key==='Enter') sendMessage(); });
+      document.getElementById('chat-back').addEventListener('click', closeChat);
+      document.getElementById('clear-chat').addEventListener('click', ()=>{ document.getElementById('messages').innerHTML=''; logActivity('Cleared chat history.'); });
+
+      document.getElementById('new-chat').addEventListener('click', ()=>{ newChat(); });
+      document.getElementById('upgrade-btn').addEventListener('click', ()=>{ alert('Upgrade flow: premium features unlocked (prototype).'); logActivity('User clicked upgrade.'); });
+      document.getElementById('projects-btn').addEventListener('click', ()=>{ alert('Projects panel — create and manage projects here.'); });
+
+      document.querySelectorAll('#history-list button').forEach(b=>b.addEventListener('click', ()=>{ alert('Loaded history: ' + b.textContent); }));
+
+      logActivity('Interface initialized.');
+    })();
+
+    function openChat(){
+      document.getElementById('main-view').style.display='none';
+      document.getElementById('chat-view').style.display='';
+      document.getElementById('tab-home').classList.remove('active');
+      document.getElementById('tab-mode').classList.remove('active');
+      document.getElementById('tab-about').classList.remove('active');
+      document.getElementById('chat-title').textContent = 'Chat with Greatest G Media';
+      logActivity('Opened chat with Greatest G Media.');
+      appendMessage('Greatest G Media', `Hello ${user.name}, welcome to Greatest G Media chat. How can I help you today?`);
+    }
+
+    function closeChat(){
+      document.getElementById('main-view').style.display='';
+      document.getElementById('chat-view').style.display='none';
+      logActivity('Closed chat view.');
+    }
+
+    function appendMessage(sender, text, isUser=false){
+      const container = document.getElementById('messages');
+      const el = document.createElement('div');
+      el.className = 'msg' + (isUser ? ' user' : '');
+      el.innerHTML = `<div style="font-weight:700;font-size:13px">${sender}</div><div style="margin-top:6px">${escapeHtml(text)}</div>`;
+      container.appendChild(el);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function sendMessage(){
+      const input = document.getElementById('composer-input');
+      const text = input.value.trim();
+      if(!text) return;
+      appendMessage(user.name, text, true);
+      input.value = '';
+      logActivity('Sent a chat message.');
+      setTimeout(()=> {
+        const reply = generateReply(text);
+        appendMessage('Greatest G Media', reply);
+      }, 600 + Math.random()*600);
+    }
+
+    function generateReply(userText){
+      const t = userText.toLowerCase();
+      if(t.includes('help') || t.includes('how')) return "Sure — tell me more about what you want to achieve and I'll suggest a plan.";
+      if(t.includes('project')) return "For projects I recommend breaking tasks into milestones, then scheduling weekly reviews.";
+      if(t.includes('price') || t.includes('upgrade')) return "Premium unlocks priority support, larger context windows, and exportable artifacts.";
+      if(t.includes('study')) return "I can create flashcards, quizzes, and a study schedule for you. Which subject?";
+      return "Thanks for that. I can summarize, give advice, or help you plan next steps — which would you prefer?";
+    }
+
+    function newChat(){
+      document.getElementById('messages').innerHTML='';
+      appendMessage('System', 'Started a new chat session.');
+      logActivity('Started new chat.');
+    }
+
+    function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+    function activateMode(mode, quick=false){
+      const content = document.getElementById('mode-content');
+      const result = document.getElementById('mode-result');
+      content.innerHTML = '';
+      result.innerHTML = '';
+      logActivity('Activated mode: ' + mode);
+
+      if(mode === 'smart'){
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `<div style="font-weight:800">Smart Assistant</div>
+          <div class="muted small">Paste text and get a concise summary or a polished rewrite.</div>
+          <textarea id="smart-input" style="width:100%;height:120px;margin-top:8px;padding:10px;border-radius:8px;border:1px solid var(--glass-2)"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-primary" id="smart-summarize">Summarize</button>
+            <button class="btn btn-ghost" id="smart-rewrite">Rewrite</button>
+          </div>
+          <div id="smart-output" style="margin-top:12px"></div>`;
+        content.appendChild(card);
+
+        document.getElementById('smart-summarize').addEventListener('click', ()=>{
+          const txt = document.getElementById('smart-input').value.trim();
+          if(!txt) return alert('Paste some text first.');
+          document.getElementById('smart-output').textContent = summarizeText(txt);
+          logActivity('Smart: summarized text.');
+        });
+        document.getElementById('smart-rewrite').addEventListener('click', ()=>{
+          const txt = document.getElementById('smart-input').value.trim();
+          if(!txt) return alert('Paste some text first.');
+          document.getElementById('smart-output').textContent = rewriteText(txt);
+          logActivity('Smart: rewrote text.');
+        });
+
+        if(quick) { document.getElementById('smart-input').value = 'Quick example: Improve this sentence.'; }
+      }
+
+      else if(mode === 'discover'){
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `<div style="font-weight:800">Discover</div>
+          <div class="muted small">Find curated resources, articles, and examples for a topic.</div>
+          <input id="discover-topic" placeholder="Enter a topic (e.g., CSS Grid, React performance)" style="width:100%;margin-top:8px;padding:10px;border-radius:8px;border:1px solid var(--glass-2)" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-primary" id="discover-run">Discover</button>
+            <button class="btn" id="discover-sample">Sample topic</button>
+          </div>
+          <div id="discover-output" style="margin-top:12px"></div>`;
+        content.appendChild(card);
+
+        document.getElementById('discover-run').addEventListener('click', ()=>{
+          const topic = document.getElementById('discover-topic').value.trim();
+          if(!topic) return alert('Enter a topic to discover.');
+          document.getElementById('discover-output').innerHTML = generateDiscovery(topic);
+          logActivity('Discover: searched for ' + topic);
+        });
+        document.getElementById('discover-sample').addEventListener('click', ()=>{
+          document.getElementById('discover-topic').value = 'Progressive Web Apps';
+        });
+
+        if(quick) { document.getElementById('discover-topic').value = 'Design systems'; document.getElementById('discover-run').click(); }
+      }
+
+      else if(mode === 'advice'){
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `<div style="font-weight:800">Advice</div>
+          <div class="muted small">Get step-by-step advice for a problem or goal.</div>
+          <input id="advice-topic" placeholder="Describe your problem or goal" style="width:100%;margin-top:8px;padding:10px;border-radius:8px;border:1px solid var(--glass-2)" />
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-primary" id="advice-run">Get Advice</button>
+          </div>
+          <div id="advice-output" style="margin-top:12px"></div>`;
+        content.appendChild(card);
+
+        document.getElementById('advice-run').addEventListener('click', ()=>{
+          const topic = document.getElementById('advice-topic').value.trim();
+          if(!topic) return alert('Tell me what you need advice on.');
+          document.getElementById('advice-output').innerHTML = generateAdvice(topic);
+          logActivity('Advice: provided guidance for ' + topic);
+        });
+
+        if(quick) { document.getElementById('advice-topic').value = 'Improve my portfolio site'; document.getElementById('advice-run').click(); }
+      }
+
+      else if(mode === 'study'){
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `<div style="font-weight:800">Study</div>
+          <div class="muted small">Create flashcards and run a quick quiz.</div>
+          <textarea id="study-input" placeholder="Enter terms and definitions, one per line: Term - Definition" style="width:100%;height:120px;margin-top:8px;padding:10px;border-radius:8px;border:1px solid var(--glass-2)"></textarea>
+          <div style="display:flex;gap:8px;margin-top:8px">
+            <button class="btn btn-primary" id="study-create">Create Flashcards</button>
+            <button class="btn" id="study-quiz">Start Quiz</button>
+          </div>
+          <div id="study-output" style="margin-top:12px"></div>`;
+        content.appendChild(card);
+
+        document.getElementById('study-create').addEventListener('click', ()=>{
+          const raw = document.getElementById('study-input').value.trim();
+          if(!raw) return alert('Enter some terms and definitions.');
+          const cards = parseFlashcards(raw);
+          document.getElementById('study-output').innerHTML = renderFlashcards(cards);
+          logActivity('Study: created ' + cards.length + ' flashcards.');
+        });
+
+        document.getElementById('study-quiz').addEventListener('click', ()=>{
+          const raw = document.getElementById('study-input').value.trim();
+          if(!raw) return alert('Enter some terms and definitions first.');
+          const cards = parseFlashcards(raw);
+          startQuiz(cards);
+        });
+
+        if(quick) {
+          document.getElementById('study-input').value = 'HTML - HyperText Markup Language\nCSS - Cascading Style Sheets\nJS - JavaScript';
+        }
+      }
+
+      else if(mode === 'deep'){
+        const card = document.createElement('div');
+        card.className='card';
+        card.innerHTML = `<div style="font-weight:800">Deep Learning</div>
+          <div class="muted small">Interactive toy: visualize a small neural network forward pass.</div>
+          <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+            <label class="small muted">Input vector (comma separated)</label>
+            <input id="deep-input" value="1,0.5,0.2" style="padding:8px;border-radius:8px;border:1px solid var(--glass-2)" />
+            <button class="btn btn-primary" id="deep-run">Run</button>
+          </div>
+          <div id="deep-output" style="margin-top:12px"></div>`;
+        content.appendChild(card);
+
+        document.getElementById('deep-run').addEventListener('click', ()=>{
+          const raw = document.getElementById('deep-input').value.trim();
+          const out = runToyNetwork(raw);
+          document.getElementById('deep-output').innerHTML = out;
+          logActivity('Deep Learning: ran toy network.');
+        });
+
+        if(quick) { document.getElementById('deep-run').click(); }
+      }
+
+      result.innerHTML = `<div class="muted small">Mode <strong>${mode}</strong> activated. Use the tools above to interact.</div>`;
+    }
+
+    function summarizeText(txt){
+      const s = txt.split(/[.?!]\s/).filter(Boolean);
+      const first = s[0] || txt;
+      const words = txt.split(/\s+/).slice(0,12).join(' ');
+      return first.length < 200 ? first : words + '…';
+    }
+
+    function rewriteText(txt){
+      return txt.replace(/\s+/g,' ').trim().replace(/i am/ig,'I am').replace(/we are/ig,'We are');
+    }
+
+    function generateDiscovery(topic){
+      const items = [
+        {title:`Intro to ${topic}`, desc:`A concise introduction to ${topic} and core concepts.`},
+        {title:`Best practices for ${topic}`, desc:`Actionable checklist and common pitfalls.`},
+        {title:`Advanced techniques in ${topic}`, desc:`Deep-dive examples and case studies.`}
+      ];
+      return `<ul style="padding-left:18px">${items.map(i=>`<li><strong>${i.title}</strong> — <span class="muted small">${i.desc}</span></li>`).join('')}</ul>`;
+    }
+
+    function generateAdvice(topic){
+      return `<ol style="padding-left:18px">
+        <li><strong>Clarify goal</strong> — Define success metrics for "${escapeHtml(topic)}".</li>
+        <li><strong>Break into tasks</strong> — Create 3–5 milestones with deadlines.</li>
+        <li><strong>Prototype quickly</strong> — Build a minimal version to validate assumptions.</li>
+        <li><strong>Iterate and measure</strong> — Use feedback to refine and scale.</li>
+      </ol>`;
+    }
+
+    function parseFlashcards(raw){
+      const lines = raw.split('\n').map(l=>l.trim()).filter(Boolean);
+      const cards = lines.map(l=>{
+        const parts = l.split(' - ');
+        return {term: parts[0].trim(), def: (parts[1]||'').trim()};
+      }).filter(c=>c.term);
+      return cards;
+    }
+
+    function renderFlashcards(cards){
+      return `<div style="display:flex;flex-direction:column;gap:8px">${cards.map((c,i)=>`<div style="padding:10px;border-radius:8px;border:1px solid var(--glass-2)"><strong>${escapeHtml(c.term)}</strong><div class="muted small" style="margin-top:6px">${escapeHtml(c.def)}</div></div>`).join('')}</div>`;
+    }
+
+    function startQuiz(cards){
+      if(!cards.length) return alert('No flashcards found.');
+      let idx = 0, score = 0;
+      const ask = () => {
+        const c = cards[idx];
+        const ans = prompt(`Definition: ${c.term}\n\nType your answer (or Cancel to stop):`);
+        if(ans === null){ alert(`Quiz ended. Score: ${score}/${idx}`); return; }
+        if(ans.toLowerCase().includes(c.def.split(' ')[0].toLowerCase())) score++;
+        idx++;
+        if(idx < cards.length) ask();
+        else alert(`Quiz complete. Score: ${score}/${cards.length}`);
+      };
+      ask();
+    }
+
+    function runToyNetwork(raw){
+      try{
+        const vec = raw.split(',').map(x=>parseFloat(x.trim())).filter(n=>!isNaN(n));
+        if(vec.length === 0) return '<div class="muted small">Invalid input vector.</div>';
+        const w1 = [[0.8, -0.2, 0.1],[0.4,0.9,-0.5]];
+        const b1 = [0.1, -0.1];
+        const hidden = w1.map((row,i)=> {
+          const val = row.reduce((s,w,j)=>s + w*(vec[j]||0), 0) + b1[i];
+          return Math.tanh(val).toFixed(3);
+        });
+        const out = (hidden.reduce((s,v)=>s + parseFloat(v),0)/hidden.length).toFixed(3);
+        return `<div><strong>Hidden layer</strong>: [${hidden.join(', ')}] <div class="muted small" style="margin-top:6px">Output (avg): ${out}</div></div>`;
+      }catch(e){
+        return '<div class="muted small">Error running network.</div>';
+      }
+    }
+
+    function randomTip(){
+      const tips = [
+        'Use consistent spacing and a limited color palette for a cleaner UI.',
+        'Write small, testable components and iterate quickly.',
+        'Document decisions in your repo to help future you and collaborators.',
+        'Automate repetitive tasks with scripts to save time.',
+        'Measure before optimizing — data guides good decisions.'
+      ];
+      return tips[Math.floor(Math.random()*tips.length)];
+    }
+
+    setTimeout(()=>{ logActivity('Ready. Try "Start chat" or pick a mode.'); }, 800);
+
+    window.BlueWave = {activateMode, openChat, closeChat, getRotatingMessage};
+  </script>
+</body>
+</html>
